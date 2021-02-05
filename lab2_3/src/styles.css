@@ -26,7 +26,11 @@ li label{
   padding-left:0.5rem;
   padding-bottom:0.5rem;
 }
-ul{
+ul.nav{
+    margin-left:max(10vw, 30px);
+}
+
+ul.selector_list{
   margin:10px;
   padding:0;
   list-style:none;

@@ -7,8 +7,8 @@ class ComposeSaladModal extends React.Component {
     return (
       <div>
         <button
+          id="createButton"
           type="button"
-          className="btn btn-primary"
           data-toggle="modal"
           data-target="#ComposeSaladModal"
           onClick={this.props.createSalad}
