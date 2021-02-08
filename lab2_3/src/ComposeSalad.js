@@ -1,106 +1,165 @@
 import React, { Component } from 'react';
-import {Salad} from './salad';
-
+import inventory from "./inventory.ES6";
+import Salad from "./Salad"
 
 class ComposeSalad extends Component {
-  constructor(props){
-    super(props)
-    this.state = {error:false};
+constructor(props) {
+super(props);
+this.count = 1;
+this.state = {foundation: '', proteins: [], extras: [], dressing:''};
+
+this.handleSelectChange = this.selectionChange.bind(this);
+this.handleCheckboxChange = this.checkboxChange.bind(this);
+this.handleSubmit = this.handleSubmit.bind(this);
+}
+
+selectionChange = e => {
+  const name = e.target.getAttribute("name");
+  if(name === 'foundation'){
+    this.setState({foundation: e.target.value});
   }
+  if(name === 'dressing'){
+    this.setState({dressing: e.target.value});
+  }
+}
 
-  handleSubmit = (event) => {
-    event.preventDefault();
-    event.target.classList.add("was-validated");
-
-    if(event.target.checkValidity()){
-      this.props.history.push("/list-salad")
-      this.props.returnSalad(this.props.salad)
+checkboxChange = e => {
+  const name = e.target.getAttribute("name");
+  const value = e.target.value;
+  if (name === "protein") {
+    if (e.target.checked) {
+      this.setState({proteins: [...this.state.proteins, value]});
+    }else{
+      this.setState(this.state.proteins.splice(this.state.proteins.indexOf(value), 1));
+  }
+  }else if (name === "extra") {
+    if (e.target.checked) {
+      this.setState({extras: [...this.state.extras, value]});
+    }else{
+      this.setState(this.state.extras.splice(this.state.extras.indexOf(value), 1));
     }
-    this.setState({error:true});
   }
+};
 
-  handleChange = (event,name,add) =>{
-    event.target.parentElement.classList.add("was-validated");
-    if(add)
-      this.props.salad.add(name)
-    else
-      this.props.salad.remove(name)
-    this.props.setSalad(this.props.salad)
-    
-     if(this.state.error){
-       this.setState({error:!(event.target.form.checkValidity())})
-     }
-  }
 
-  render() {
-    const inventory = this.props.inventory;
-    let foundations = Object.keys(inventory).filter(name => inventory[name].foundation);
-    let proteins = Object.keys(inventory).filter(name => inventory[name].protein);
-    let dressings = Object.keys(inventory).filter(name => inventory[name].dressing);
-    let extras = Object.keys(inventory).filter(name => inventory[name].extra);
+handleSubmit = e => {
+  e.preventDefault();
+  e.target.classList.add("was-validated");
+  if(e.target.checkValidity() === true){
+  let mySalad = new Salad();
+  mySalad.add(this.state.foundation);
+  mySalad.add(this.state.dressing);
 
-    return (
-      <>
-        <form onSubmit={this.handleSubmit} noValidate>
-          <SelectSelector selected={this.props.salad.foundation} category="foundation" label={<Label text="Choose a foundation:" />} items={foundations} changeHandler={this.handleChange}/>
-          <CheckboxSelector selected={this.props.salad.proteins} category="protein" label={<Label text="Choose as many proteins as you like:" />} items={proteins} changeHandler={this.handleChange}/>
-          <CheckboxSelector selected={this.props.salad.extras} category="extra" label={<Label text="Mix and match your extras:" />} items={extras} changeHandler={this.handleChange}/>
-          <SelectSelector selected={this.props.salad.dressing} category="dressing" label={<Label text="ONLY ONE DRESSING!" />} items={dressings} changeHandler={this.handleChange}/>
-          <input type="submit" className="btn btn-primary" />
-        </form>
-        <span>{this.state.error?<div style={{fontSize:"80%",color:"#dc3545"}}>Saknas något i din beställning!</div>:""} Price: {this.props.salad.price()}</span>
-      </>
-    );
+  this.state.proteins.forEach(name => {
+	mySalad.add(name)});
+  
+  this.state.extras.forEach(name => {
+	mySalad.add(name)});
+  mySalad.cost = mySalad.price();
+  this.props.addSalad(mySalad);
+
+  this.setState({foundation: '', proteins: [], extras: [], dressing:''});
+  this.props.history.push('/view-order');
   }
 }
 
-const Label = (props) => <label>{props.text}</label>;
+render() {
+const inventory = this.props.inventory;
+let foundations = Object.keys(inventory).filter(
+name => inventory[name].foundation
+);
+let proteins = Object.keys(inventory).filter(
+  name => inventory[name].protein);
+let extras = Object.keys(inventory).filter(
+  name => inventory[name].extra);
+let dressings = Object.keys(inventory).filter(
+  name => inventory[name].dressing);
 
-const SelectSelector = ({label, category, items, selected, changeHandler}) => {
-  return (
-    <div className="form-group">
-      {label}<br />
-      <select required name={category} value={selected} onChange={(event)=>changeHandler(event, event.target.value, selected!==event.target.value)}>
-        <option key={"blank"} value=""> </option>
-        {items.map(item => <option key={item} value={item}>{item}</option>)}
-      </select>
-      <div className="invalid-feedback">Select one {category}!</div>
-    </div>
+return (
+  <form id = "composeSaladForm" onSubmit={this.handleSubmit} noValidate>
+  <SaladSelection
+    type="foundation"
+    items={foundations}
+    init={this.state.foundation}
+    handleChange={this.selectionChange}
+  />
+
+  <SaladCheckbox 
+  type="protein"
+  items={proteins}
+  handleChange={this.checkboxChange}
+  itemList={this.state.proteins}
+/>
+  <SaladCheckbox 
+  type ='extra' 
+  items={extras}
+  handleChange={this.checkboxChange}
+  itemList={this.state.extras}
+/>
+
+  <SaladSelection
+  type = 'dressing'
+  items = {dressings}
+  init = {this.state.dressing}
+  handleChange = {this.selectionChange}
+  />
+  <button type = 'submit' className="btn btn-primary" value = 'Submit'>Lägg till sallad</button>
+  </form>
+  
+);
+}
+}
+
+class SaladSelection extends Component {
+  render(){
+  return(
+    <>
+  < div className="form-group">
+  <label htmlFor="select">Välj en {this.props.type}</label>
+  <select required 
+    className="form-control" 
+    id="select"
+    value={this.props.init}
+    name={this.props.type}
+    onChange={this.props.handleChange}>
+    <option value="">...</option>
+    {this.props.items.map(name => (
+      <option key={name} value={name}>
+        {name} + {inventory[name].price} kr
+      </option>))}
+  </select>
+  <div className="invalid-feedback">Du måste välja en {this.props.type}</div>
+  </div>
+  </>
   );
+  }
 }
 
-const CheckboxSelector = ({label, category, items, selected, changeHandler}) => {
+class SaladCheckbox extends Component{
+render() {
   return (
-    <div className="form-group">
-      {label}<br />
-      <ul className="selector_list">
-        {items.map((item, i) =>
-          <li key={item}>
-            <input id={category+i} name={category} type="checkbox" checked={selected.includes(item)} onChange={(event)=>changeHandler(event,item,!selected.includes(item))}/>
-            <label htmlFor={category+i} >{item}</label>
-         </li>
-        )}
-      </ul>
+    <>
+    < div className="form-group">
+    <label htmlFor="checkbox">Välj en eller flera {this.props.type}</label>
+    <ul>
+      {this.props.items.map(name =>
+        <li key={name}>
+          <label htmlFor={name}>{name} + {inventory[name].price} kr</label>
+          <input 
+          type="checkbox"
+          value={name}
+          name={this.props.type}
+          checked={this.props.itemList.includes(name) || false}
+          onChange={this.props.handleChange}
+          />
+        </li>
+      )}
+    </ul>
     </div>
-  )
-}
-
-const RadioSelector = ({label, category, items, selected, changeHandler}) => {
-  return (
-    <div className="form-group">
-      {label}
-      <ul className="selector_list">
-        {items.map((item, i) =>
-          <li key={item}>
-            <input required id={category+i} name={category} type="radio" checked={selected === item} onChange={(event)=>changeHandler(event,item, selected !== item)}/>
-            <label htmlFor={category+i} >{item}</label>
-          </li>
-        )}
-      </ul>
-      <div className="invalid-feedback">Select one dressing!</div>
-    </div>
-  )
-}
-
+  </>
+     );
+    }
+  }
 
 export default ComposeSalad;
+
