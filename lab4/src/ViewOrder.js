@@ -1,46 +1,34 @@
 import React from "react";
 
-class ViewOrder extends React.Component {
-  constructor(props) {
-    super(props);
-    this.handleChange = this.handleChange.bind(this);
-    this.handleDelete = this.handleDelete.bind(this);
+const ViewOrder = ({order, remove, change, history, placeOrder}) => {
+  const handleEditButton = (salad) => {
+    change(salad)
+    history.push('/compose-salad')
+  }
+  const handlePlaceOrder = () => {
+    placeOrder((ok)=>{
+      if(ok) order.forEach(salad => remove(salad));
+      document.getElementById("message").innerHTML = (ok)?"Thanks for your order!":"Something went wrong... :(";
+    })
   }
 
-  handleChange = (e, salad) => {
-    e.preventDefault();
-    this.props.changeSalad(salad);
-    this.props.history.push('/resubmit-salad');
-
-  }
-
-  handleDelete = (e, salad) => {
-  e.preventDefault();
-  this.props.deleteSalad(salad);
-  }
-
-
-  render() {
-    const totCost = this.props.order.reduce((sum, salad) =>
-    {return sum + salad.cost;},0);
-      return (
-        <div>
-        <ol>
-      {this.props.order.map((salad) => (
-        <li key={salad.id} className="orderView">
-      <span>{[salad.foundation, ...salad.protein, ...salad.extras, salad.dressing].filter(x=>x).join(", ")} : {salad.cost} kr</span>
-
-      <button type = 'button' className="btn btn-primary" onClick={(e) => this.handleChange(e, salad)}>Ändra</button>{' '}
-
-      <button type = 'button' className="btn btn-danger" onClick={(e) => this.handleDelete(e, salad)}>Delete</button>{' '}
-        </li>
-      ))}
-    </ol>
-    <div><span>Total cost: {totCost} kr</span></div>
+  return (
+    <div>
+      <span id="message"></span>
+      <ol>
+        {order.map((salad,i) => (
+          <li key={"salad"+i} className="orderView">
+            <span>{[salad.foundation, ...salad.proteins, ...salad.extras, salad.dressing].filter(x=>x).join(", ")} : {salad.price()} kr</span>
+            <button type = 'button' className="btn btn-primary" onClick={() => handleEditButton(salad)}>Ändra</button>{' '}
+            <button type = 'button' className="btn btn-danger" onClick={() => remove(salad)}>Ta bort</button>{' '}
+          </li>
+        ))}
+      </ol>
+      <button className="btn btn-primary" onClick={handlePlaceOrder}>Order</button>
+      <span>Total cost: {order.reduce((sum, salad) =>sum + salad.price(),0)} kr</span>
     </div>
-             );
-            }
-          }
+  );
+}
 
 
 export default ViewOrder;
