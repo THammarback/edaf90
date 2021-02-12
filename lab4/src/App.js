@@ -5,6 +5,8 @@ import {BrowserRouter as Router, Route, Link, Switch} from "react-router-dom";
 
 import ComposeSalad from "./ComposeSalad";
 import ViewOrder from "./ViewOrder";
+import Salad from "./Salad"
+import "./styles.css";
 
 const API = "http://localhost:8080"
 
@@ -12,11 +14,16 @@ const API = "http://localhost:8080"
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = {order:[], inventory:{}, selectedSalad:undefined}
+    this.state = {
+      order:JSON.parse(window.localStorage.getItem("order"))?.map(salad => new Salad(salad.foundation, ...salad.proteins, ...salad.extras, salad.dressing)) || [],
+      inventory:{},
+      selectedSalad:undefined
+    }
   }
 
   componentDidMount(){
     let list = ["foundations","dressings","extras","proteins"];
+
     //Fetch all in list
     Promise.all(list.map(category=>fetch(API+'/'+category).then(res=>res.json()).then(name=>({name:category, items:name}))))
     //iterate every ingredient
@@ -43,7 +50,7 @@ class App extends Component {
   placeOrder = (success) =>{
     fetch(API+"/orders", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {"Content-Type": "application/json"},
       body:JSON.stringify(this.state.order)
     }).then(res=>{
       success(res.ok)
@@ -52,12 +59,20 @@ class App extends Component {
     });
   }
 
-  addSalad = thatSalad => {
-    this.setState(state=>({order:[...state.order.filter(salad=>salad !== thatSalad), thatSalad]}));
+  addSalad = (thatSalad) => {
+    this.setState(state=>{
+      let newOrderList = [...state.order.filter(salad=>salad !== thatSalad), thatSalad];
+      window.localStorage.setItem("order", JSON.stringify(newOrderList))
+      return {order:newOrderList}
+    });
   }
 
   deleteSalad = (thatSalad) => {
-    this.setState(state=>({order:[...state.order.filter(salad=>salad !== thatSalad)]}));
+    this.setState(state=>{
+      let newOrderList = [...state.order.filter(salad=>salad !== thatSalad)];
+      window.localStorage.setItem("order", JSON.stringify(newOrderList))
+      return {order:newOrderList}
+    });
   }
 
   editSalad = (thatSalad) => {

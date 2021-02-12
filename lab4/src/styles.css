@@ -1,0 +1,50 @@
+body{
+  background-color:#e9ecef
+}
+ol, ul{
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mainContent{
+  flex: 1 1 auto;
+  background-color:white;
+  padding:20px;
+  margin-left:max(10vw, 30px);
+  margin-right:max(10vw, 30px);
+}
+.nav{
+  margin-left:max(10vw, 30px);
+  margin-right:max(10vw, 30px);
+}
+.nav>li{
+  padding-left:20px;
+}
+.nav-link{
+  padding: 0;
+}
+
+li.saladList{
+    display:flow-root;
+    width:auto;
+}
+li.saladList>span{
+  display:inline-flex;
+  vertical-align:-webkit-baseline-middle;
+}
+li.saladList>div{
+  float:right;
+}
+li.saladList>div>.price{
+  margin-right:20px;
+}
+
+li label{
+  margin:0;
+  padding-left:0.5rem;
+  padding-bottom:0.5rem;
+}
+
+.price{
+  float:right;
+}

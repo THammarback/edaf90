@@ -6,10 +6,10 @@ class ComposeSalad extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      foundation:props.selectedSalad?.foundation || '',
-      dressing:props.selectedSalad?.dressing || '',
-      proteins:props.selectedSalad?.proteins || [],
-      extras:props.selectedSalad?.extras || []
+      foundation:props.selectedSalad?.foundation || window.localStorage.getItem("foundationSelected") || '',
+      dressing:props.selectedSalad?.dressing || window.localStorage.getItem("dressingSelected") || '',
+      proteins:props.selectedSalad?.proteins || JSON.parse(window.localStorage.getItem("proteinsSelected"))  || [],
+      extras:props.selectedSalad?.extras || JSON.parse(window.localStorage.getItem("extrasSelected"))  || []
     }
   }
 
@@ -20,6 +20,7 @@ class ComposeSalad extends Component {
     if (type === 'dressing') {
       this.setState({dressing: event.target.value});
     }
+    window.localStorage.setItem(type+"Selected",event.target.value);
   }
 
   checkboxChange = (event, type) => {
@@ -27,6 +28,7 @@ class ComposeSalad extends Component {
     this.setState(state=>{
       a[type] = state[type].filter(val => val !== event.target.value);
       if(event.target.checked) a[type].push(event.target.value)
+      window.localStorage.setItem(type+"Selected",JSON.stringify(a[type]))
       return a;
     });
   }
@@ -41,6 +43,12 @@ class ComposeSalad extends Component {
       salad.proteins = this.state.proteins;
       salad.extras = this.state.extras;
       this.props.addSalad(salad);
+
+      window.localStorage.removeItem("foundationSelected")
+      window.localStorage.removeItem("dressingSelected")
+      window.localStorage.removeItem("proteinsSelected")
+      window.localStorage.removeItem("extrasSelected")
+
       this.props.history.push('/view-order');
     }
   }
@@ -83,7 +91,8 @@ const SaladCheckbox = ({type, items, itemList, handleChange}) => {
         {Object.keys(items).map((name,i) =>(
           <li key={name}>
             <input type="checkbox" value={name} name={type} id={type+i} checked={itemList.includes(name)} onChange={(e)=>handleChange(e,type)}/>
-            <label htmlFor={type+i}><span>{name}</span><span>{items[name].price} kr</span></label>
+            <label htmlFor={type+i}><span>{name}</span></label>
+            <span className="price">{items[name].price} kr</span>
           </li>
         ))}
       </ul>
