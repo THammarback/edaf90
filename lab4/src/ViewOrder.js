@@ -6,9 +6,15 @@ const ViewOrder = ({order, remove, change, history, placeOrder}) => {
     history.push('/compose-salad')
   }
   const handlePlaceOrder = () => {
-    placeOrder((ok)=>{
-      if(ok) order.forEach(salad => remove(salad));
-      document.getElementById("message").innerHTML = (ok)?"Thanks for your order!":"Something went wrong... :(";
+    placeOrder((ok,empty)=>{
+      if (empty)
+        document.getElementById("message").innerHTML = "Lägg till en sallad först vetja!";
+      else{
+        if(ok){
+          order.forEach(salad => remove(salad));
+        }
+        document.getElementById("message").innerHTML = (ok)?"Sallad beställd 😎":"Something went wrong... 🥺";
+      }
     })
   }
 

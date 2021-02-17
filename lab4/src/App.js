@@ -29,7 +29,7 @@ class App extends Component {
     //iterate every ingredient
     .then(data => Promise.all(data.map(category =>
       //fetch all properties
-      Promise.all(category.items.map(name => fetch(API+'/'+category.name+'/'+name).then(res=>res.json()).then(properties=>({name:name, properties:properties}))))
+       Promise.all(category.items.map(name => fetch(API+'/'+category.name+'/'+name).then(res=>res.json()).then(properties=>({name:name, properties:properties}))))
         //Reformat
         .then(that=>{
           let outer = {}
@@ -48,15 +48,17 @@ class App extends Component {
   }
 
   placeOrder = (success) =>{
-    fetch(API+"/orders", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body:JSON.stringify(this.state.order)
-    }).then(res=>{
-      success(res.ok)
-    }).catch(res=>{
-      success(false)
-    });
+    if(this.state.order.length)
+      fetch(API+"/orders", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body:JSON.stringify(this.state.order)
+      }).then(res=>{
+        success(res.ok)
+      }).catch(res=>{
+        success(false)
+      });
+    else success(false, "empty")
   }
 
   addSalad = (thatSalad) => {

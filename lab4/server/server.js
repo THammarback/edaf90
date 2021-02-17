@@ -39,6 +39,7 @@ var HttpStatus = require('http-status-codes');
       timestamp: new Date(),
       order: req.body
     };
+    console.log("order recived!")
     res.json(order);
   }
 
